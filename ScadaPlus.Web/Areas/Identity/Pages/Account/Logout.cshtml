@@ -1,0 +1,17 @@
+﻿@page
+@using Microsoft.AspNetCore.Identity;
+@using ScadaPlus.Data.Identity
+@attribute [IgnoreAntiforgeryToken]
+@inject SignInManager<ScadaPlusIdentityUser> _signInManager
+
+@functions {
+    public async Task<IActionResult> OnGet()
+    {
+        if (_signInManager.IsSignedIn(User))
+        {
+            await _signInManager.SignOutAsync();
+        }
+
+        return Redirect("~/");
+    }
+}

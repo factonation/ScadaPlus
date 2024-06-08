@@ -1,0 +1,85 @@
+﻿@inject ISnackbar _snackbar
+@inject MachineRepository _machineRepository
+@inject JobRepository _jobRepository
+@inject ApplicationState _applicationState
+
+<MudDialog>
+    <DialogContent>
+        <MudContainer>
+            <MudText Typo="Typo.h5">สร้าง Job ใหม่</MudText>
+            <MudTextField T="string" @bind-Value="_name" Label="ชื่องาน" Class="my-4" />
+            <MudSelect @bind-Value="_machineId" Label="เครื่องจักร" Text="เลือกเครื่องจักร">
+                @foreach (Machine machine in _machines)
+                {
+                    <MudSelectItem Value="machine.MachineId">@machine.Code</MudSelectItem>
+                }
+            </MudSelect>
+            <MudTextField T="DateTime" @bind-Value="_startTime" Label="เวลาเริ่มต้น (แผน)" Format="s" InputType="InputType.DateTimeLocal" Class="my-4" />
+            <MudTextField T="DateTime" @bind-Value="_endTime" Label="เวลาจบ (แผน)" Format="s" InputType="InputType.DateTimeLocal" Class="my-4" />
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Tertiary" Variant="Variant.Filled" OnClick="CreateJobAsync">สร้าง</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    public MudDialogInstance? MudDialog { get; set; }
+    [Parameter]
+    public EventCallback OnCreated { get; set; }
+
+    private List<Machine> _machines = new List<Machine>();
+
+    private string _name = string.Empty;
+    private int _machineId;
+    private DateTime _startTime = DateTime.Now;
+    private DateTime _endTime = DateTime.Now.AddHours(1);
+
+    protected override async Task OnInitializedAsync()
+    {
+        _machines = await _machineRepository.ReadMachinesAsync();
+    }
+
+    private async Task CreateJobAsync()
+    {
+        Job job = new Job
+        {
+            Name = _name,
+            MachineId = _machineId,
+            StartTime = _startTime,
+            EndTime = _endTime
+        };
+
+        if (string.IsNullOrWhiteSpace(job.Name) || job.MachineId == 0)
+        {
+            _snackbar.Add($"ไม่สามารถสร้างงาน {job.Name} ได้ กรุณาระบุชื่องานและเครื่องจักร", Severity.Error);
+            return;
+        }
+
+        if (IsJobOverlapped(job))
+        {
+            _snackbar.Add($"ไม่สามารถสร้างงาน {job.Name} ได้ เนื่องจากเวลาทับกัน", Severity.Error);
+            return;
+        }
+
+        await _jobRepository.CreateJobAsync(job);
+
+        _snackbar.Add($"สร้างงาน {job.Name} สำเร็จ", Severity.Success);
+
+        await OnCreated.InvokeAsync();
+
+        MudDialog?.Close();
+    }
+
+    private bool IsJobOverlapped(Job job)
+    {
+        var overlappedJob = _applicationState.Jobs.FirstOrDefault(
+            j => job.StartTime < j.EndTime && job.EndTime > j.StartTime && job.MachineId == j.MachineId);
+
+        if (overlappedJob is not null)
+            return true;
+        else
+            return false;
+    }
+}

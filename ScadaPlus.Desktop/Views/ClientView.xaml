@@ -1,0 +1,59 @@
+﻿<UserControl x:Class="ScadaPlus.Desktop.Views.ClientView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:ScadaPlus.Desktop.Views"
+             xmlns:components="clr-namespace:ScadaPlus.Desktop.Components"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="400"
+             Loaded="UserControl_Loaded">
+    <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+        <StackPanel>
+            <WrapPanel>
+                <StackPanel Margin="20">
+                    <TextBlock Text="{Binding MachineName}" FontSize="20"/>
+                    <TextBlock Text="{Binding IpAddress}" FontSize="8"/>
+                    <TextBlock Text="{Binding HubPath}" FontSize="8"/>
+                </StackPanel>
+                <Ellipse Width="30" Height="30">
+                    <Ellipse.Resources>
+                        <Style TargetType="Ellipse">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                    <Setter Property="Fill" Value="LawnGreen"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsConnected}" Value="False">
+                                    <Setter Property="Fill" Value="IndianRed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Ellipse.Resources>
+                </Ellipse>
+            </WrapPanel>
+            <WrapPanel>
+                <Button x:Name="ButtonConnect" Content="Connect" Padding="10" Margin="10" Click="ButtonConnect_Click"/>
+                <Button x:Name="ButtonDisconnect" Content="Disconnect" Padding="10" Margin="10" Click="ButtonDisconnect_Click"/>
+            </WrapPanel>
+            <TextBlock Text="Status messages" Margin="20"/>
+            <ListBox ItemsSource="{Binding StatusMessages}" Height="100" MaxHeight="100"/>
+            <TextBlock Text="Inputs" Margin="20"/>
+            <components:BitLamps Bits="{Binding Inputs, RelativeSource={RelativeSource AncestorType={x:Type local:ClientView}}}"/>
+            <TextBlock Text="Outputs" Margin="20"/>
+            <components:BitLamps Bits="{Binding Outputs, RelativeSource={RelativeSource AncestorType={x:Type local:ClientView}}}"/>
+            <TextBlock Text="Holding Registers" Margin="20"/>
+            <ItemsControl ItemsSource="{Binding HoldingRegisters}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}" Margin="5"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </Grid>
+</UserControl>

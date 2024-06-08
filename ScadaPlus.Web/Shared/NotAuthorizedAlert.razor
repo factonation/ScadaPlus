@@ -1,0 +1,18 @@
+﻿<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
+    @if (IsAdminRoleOnly.HasValue)
+    {
+        @if (IsAdminRoleOnly.Value)
+        {
+            <MudAlert Severity="Severity.Normal">คุณต้องเป็น Admin เท่านั้นเพื่อเข้าถึงหน้านี้</MudAlert>
+        }
+    }
+    else
+    {
+        <MudAlert Severity="Severity.Normal">กรุณา Login เพื่อเข้าสู่ระบบ</MudAlert>
+    }
+</MudContainer>
+
+@code {
+    [Parameter]
+    public bool? IsAdminRoleOnly { get; set; }
+}

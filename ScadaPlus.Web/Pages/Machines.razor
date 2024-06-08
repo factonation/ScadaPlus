@@ -1,0 +1,35 @@
+﻿@page "/machines"
+
+@inject ApplicationState _applicationState
+
+<PageTitle>ScadaPlus | เครื่องจักร</PageTitle>
+
+<AuthorizeView Roles="Admin, Operator">
+    <Authorized>
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-8">
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudText Typo="Typo.h3">ข้อมูลเครื่องจักร</MudText>
+                </MudItem>
+                <MudItem xs="12" lg="4">
+                    <MachineInformation MachineState="_applicationState.MachineStates[0]" HubPath="hub-1" ImagePath="https://image.made-in-china.com/202f0j00gSQfKBUFHVou/1300-2500-200mm-Working-Area-CNC-Laser-Router-Machine-for-Wood.jpg" />
+                </MudItem>
+                <MudItem xs="12" lg="4">
+                    <MachineInformation MachineState="_applicationState.MachineStates[1]" HubPath="hub-2" ImagePath="https://m3f9a8g5.rocketcdn.me/wp-content/uploads/2022/11/Falcon-cnc-router-6.webp" />
+                </MudItem>
+                <MudItem xs="12" lg="4">
+                    <MachineInformation MachineState="_applicationState.MachineStates[2]" HubPath="hub-3" ImagePath="https://ameroprecision.com/img/Category/Amero-machining-centers-priminer-v11l-alpha-center.png" />
+                </MudItem>
+            </MudGrid>
+        </MudContainer>
+    </Authorized>
+    <NotAuthorized>
+        <NotAuthorizedAlert/>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+
+@code {
+
+}

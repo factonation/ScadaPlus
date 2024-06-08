@@ -1,0 +1,24 @@
+﻿<MudCard Elevation="25" Class="rounded-lg pb-4">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h5" Align="Align.Center">@HeaderText</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent Class="d-flex justify-center">
+        <MudIcon Icon="@Icon" Style="font-size: 8rem;"></MudIcon>
+    </MudCardContent>
+    <MudCardActions Class="d-flex justify-center">
+        <MudLink Href="@Path">@LinkText</MudLink>
+    </MudCardActions>
+</MudCard>
+
+@code {
+    [Parameter]
+    public string HeaderText { get; set; } = string.Empty;
+    [Parameter]
+    public string Icon { get; set; } = string.Empty;
+    [Parameter]
+    public string Path { get; set; } = string.Empty;
+    [Parameter]
+    public string LinkText { get; set; } = string.Empty;
+}

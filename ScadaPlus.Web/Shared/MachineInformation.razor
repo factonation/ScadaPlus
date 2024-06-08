@@ -1,0 +1,99 @@
+﻿@inject NavigationManager _navigationManager
+
+@implements IDisposable
+
+<MudCard>
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h4">@MachineState?.MachineCode</MudText>
+        </CardHeaderContent>
+        <CardHeaderActions>
+            <MudTooltip Text="@($"เวลาอัพเดทจากระบบล่าสุด {MachineState?.CurrentTime.ToString()}")">
+                <MudIconButton Icon="@Icons.Material.Outlined.Timer" Color="Color.Default" />
+            </MudTooltip>
+        </CardHeaderActions>
+    </MudCardHeader>
+    <MudCardMedia Image="@ImagePath" Height="200" />
+    <MudCardContent>
+        @if (_data is null)
+        {
+            <MudAlert Severity="Severity.Normal">ยังไม่มีการเชื่อมต่อจากโปรแกรม Desktop</MudAlert>
+        }
+        else if (!(MachineState?.IsConnected ?? false))
+        {
+            <MudAlert Severity="Severity.Normal">ยังไม่มีข้อมูลมาจากเครื่องจักร</MudAlert>
+        }
+        else
+        {
+            <MudList>
+                @if (MachineState.IsJobActive)
+                {
+                    <MudChip Color="Color.Tertiary">Active Job Id: @MachineState.ActiveJobId</MudChip>
+                }
+                else
+                {
+                    <MudChip Color="Color.Default">ยังไม่มี Job</MudChip>
+                }
+                @if (MachineState.IsRunning)
+                {
+                    <MudListItem Text="เครื่องจักรกำลังทำงานอยู่" Icon="@Icons.Material.Filled.CheckCircle" IconColor="Color.Success" />
+                }
+                else
+                {
+                    <MudListItem Text="เครื่องจักรไม่ได้ทำงาน" Icon="@Icons.Material.Filled.Cancel" IconColor="Color.Error" />
+                }
+                <MudListItem Text="@($"เวลาที่เริ่มทำงาน: {MachineState.StartTime}")" Icon="@Icons.Material.Filled.AccessTime" IconColor="Color.Info" />
+                <MudListItem Text="@($"เวลาที่สิ้นสุดการทำงาน: {MachineState.EndTime}")" Icon="@Icons.Material.Filled.Bedtime" IconColor="Color.Info" />
+                <MudListItem Text="@($"เวลาที่ไม่ได้ทำงาน: {MachineState.FaultOrIdleTimeSeconds} วินาที")" Icon="@Icons.Material.Filled.TimerOff" IconColor="Color.Info" />
+                <MudListItem Text="@($"Ideal Cycle Time: {MachineState.IdealCycleTime} วินาที/ชิ้น")" Icon="@Icons.Material.Filled.ElectricBolt" IconColor="Color.Info" />
+                <MudListItem Text="@($"จำนวน OK: {MachineState.OkCount}")" Icon="@Icons.Material.Filled.GppGood" IconColor="Color.Info" />
+                <MudListItem Text="@($"จำนวน NG: {MachineState.NgCount}")" Icon="@Icons.Material.Filled.GppBad" IconColor="Color.Info" />
+                <MudDivider Class="py-2"/>
+                <MudText Typo="Typo.h5">ข้อมูลดิบ</MudText>
+                <MudText>Inputs</MudText>
+                <BitLamps Bits="MachineState.Inputs" />
+                <MudText>Outputs</MudText>
+                <BitLamps Bits="MachineState.Outputs" />
+                <MudText>Holding Registers</MudText>
+                <WordDisplays Words="MachineState.HoldingRegisters" />
+            </MudList>
+
+        }
+    </MudCardContent>
+</MudCard>
+
+
+@code {
+    [Parameter]
+    public MachineState? MachineState { get; set; }
+    [Parameter]
+    public string HubPath { get; set; } = string.Empty;
+    [Parameter]
+    public string ImagePath { get; set; } = string.Empty;
+
+    private HubConnection? _hubConnection;
+
+    private ModbusDeviceData? _data;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl(_navigationManager.ToAbsoluteUri($"/{HubPath}"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        _hubConnection.On<ModbusDeviceData>("ReceiveModbusDeviceData", async (data) =>
+        {
+            _data = data;
+            MachineState?.UpdateStateFromModbusDeviceData(data);
+            await InvokeAsync(StateHasChanged);
+        });
+
+        await _hubConnection.StartAsync();
+    }
+
+    public void Dispose()
+    {
+        
+    }
+}

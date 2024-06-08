@@ -1,0 +1,31 @@
+﻿@page "/"
+
+<PageTitle>ScadaPlus | หน้าแรก</PageTitle>
+
+<AuthorizeView>
+    <Authorized>
+        <MudText Typo="Typo.h3" Align="MudBlazor.Align.Center">ยินดีต้อนรับสู่ ScadaPlus</MudText>
+        <MudGrid Class="mt-8">
+            <MudItem xs="12" md="4">
+                <MenuCard HeaderText="ภาพรวมการผลิต" Icon="@Icons.Material.Outlined.Dashboard" Path="dashboard" ButtonText="ไปที่ภาพรวมการผลิต"/>
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MenuCard HeaderText="เครื่องจักร" Icon="@Icons.Material.Outlined.MiscellaneousServices" Path="machines" ButtonText="ไปที่เครื่องจักร" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MenuCard HeaderText="งานผลิต" Icon="@Icons.Material.Outlined.Factory" Path="jobs" ButtonText="ไปที่งานผลิต" />
+            </MudItem>
+        </MudGrid>
+        <MudGrid Justify="Justify.Center">
+            <MudItem xs="12" md="4">
+                <MenuCard HeaderText="รายงาน" Icon="@Icons.Material.Outlined.FileCopy" Path="reports" ButtonText="ไปที่รายงาน" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MenuCard HeaderText="ออกจากระบบ" Icon="@Icons.Material.Outlined.Logout" Path="identity/account/logout" ButtonText="ออกจากระบบ" />
+            </MudItem>
+        </MudGrid>
+    </Authorized>
+    <NotAuthorized>
+        <NotAuthorizedAlert/>
+    </NotAuthorized>
+</AuthorizeView>

@@ -1,0 +1,231 @@
+﻿@page "/dashboard"
+
+@inject ApplicationState _applicationState
+
+@using ApexCharts
+
+@implements IDisposable
+
+<PageTitle>ScadaPlus | Dashboard</PageTitle>
+
+<AuthorizeView Roles="Admin">
+    <Authorized>
+        <MudGrid Class="mt-2">
+            <MudItem xs="12">
+                @if (_connectedMachineStates.Count is 0)
+                {
+                    <MudText Typo="Typo.body2">ไม่ได้เชื่อมต่อกับเครื่องจักร</MudText>
+                }
+                else
+                {
+                    <div style="display: flex;">
+                        @foreach (var state in _connectedMachineStates)
+                        {
+                            <MudAlert Severity="Severity.Info" Dense="true" Class="mx-2">เครื่องจักร @state.MachineCode กำลังทำงานรหัส @state.ActiveJobId อยู่</MudAlert>
+                        }
+                    </div>
+                }
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                @if (_connectedMachineStates.Count is 0)
+                {
+                    <MudText Typo="Typo.body2">ไม่ได้เชื่อมต่อกับเครื่องจักร</MudText>
+                }
+                else
+                {
+                    <ApexChart @ref=_averageOeeChart
+                               TItem="MachineState"
+                               Title="ค่าเฉลี่ย OEE"
+                               Options="_oeeRadialBarOptions">
+                        <ApexPointSeries TItem="MachineState"
+                                         Items="_connectedMachineStates"
+                                         Name="Average OEE"
+                                         SeriesType="SeriesType.RadialBar"
+                                         XValue="ms => ms.MachineCode"
+                                         YAggregate="@(ms => decimal.Round(ms.Average(j => (decimal)j.OEE)))" />
+                    </ApexChart>
+                }
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                @if (_connectedMachineStates.Count is 0)
+                {
+                    <MudText Typo="Typo.body2">ไม่ได้เชื่อมต่อกับเครื่องจักร</MudText>
+                }
+                else
+                {
+                    <ApexChart @ref=_averageAvailabilityChart
+                               TItem="MachineState"
+                               Title="ค่าเฉลี่ย Availability"
+                               Options="_availabilityRadialBarOptions">
+                        <ApexPointSeries TItem="MachineState"
+                                         Items="_connectedMachineStates"
+                                         Name="Average Availability"
+                                         SeriesType="SeriesType.RadialBar"
+                                         XValue="ms => ms.MachineCode"
+                                         YAggregate="@(ms => decimal.Round(ms.Average(j => (decimal)j.Availability)))" />
+                    </ApexChart>
+                }
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                @if (_connectedMachineStates.Count is 0)
+                {
+                    <MudText Typo="Typo.body2">ไม่ได้เชื่อมต่อกับเครื่องจักร</MudText>
+                }
+                else
+                {
+                    <ApexChart @ref=_averagePerformanceChart
+                               TItem="MachineState"
+                               Title="ค่าเฉลี่ย Performance"
+                               Options="_performanceRadialBarOptions">
+                        <ApexPointSeries TItem="MachineState"
+                                         Items="_connectedMachineStates"
+                                         Name="Average Performance"
+                                         SeriesType="SeriesType.RadialBar"
+                                         XValue="ms => ms.MachineCode"
+                                         YAggregate="@(ms => decimal.Round(ms.Average(j => (decimal)j.Performance)))" />
+                    </ApexChart>
+                }
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                @if (_connectedMachineStates.Count is 0)
+                {
+                    <MudText Typo="Typo.body2">ไม่ได้เชื่อมต่อกับเครื่องจักร</MudText>
+                }
+                else
+                {
+                    <ApexChart @ref=_averageQualityChart
+                               TItem="MachineState"
+                               Title="ค่าเฉลี่ย Quality"
+                               Options="_qualityRadialBarOptions">
+                        <ApexPointSeries TItem="MachineState"
+                                         Items="_connectedMachineStates"
+                                         Name="Average Quality"
+                                         SeriesType="SeriesType.RadialBar"
+                                         XValue="ms => ms.MachineCode"
+                                         YAggregate="@(ms => decimal.Round(ms.Average(j => (decimal)j.Quality)))" />
+                    </ApexChart>
+                }
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <ApexChart @ref=_totalOkNgChart
+                           TItem="MachineState"
+                           Title="จำนวนชิ้นงาน Ok Ng"
+                           Options="_totalCountBarOptions">
+                    <ApexPointSeries TItem="MachineState"
+                                     Items="_connectedMachineStates"
+                                     Name="Total Ok Count"
+                                     SeriesType="SeriesType.Bar"
+                                     XValue="@(ms => ms.MachineCode)"
+                                     YAggregate="@(ms => ms.Sum(ms => ms.OkCount))"
+                                     OrderByDescending="e=>e.Y"
+                                     ShowDataLabels />
+
+                    <ApexPointSeries TItem="MachineState"
+                                     Items="_connectedMachineStates"
+                                     Name="Total Ng Count"
+                                     SeriesType="SeriesType.Bar"
+                                     XValue="@(ms => ms.MachineCode)"
+                                     YAggregate="@(ms => ms.Sum(ms => ms.NgCount))"
+                                     OrderByDescending="e=>e.Y"
+                                     ShowDataLabels />
+
+                </ApexChart>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudGrid>
+                    <MudItem xs="12">
+                        <MachineDashboardInformation MachineState="_applicationState.MachineStates[0]" HubPath="hub-1" ImagePath="https://image.made-in-china.com/202f0j00gSQfKBUFHVou/1300-2500-200mm-Working-Area-CNC-Laser-Router-Machine-for-Wood.jpg" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MachineDashboardInformation MachineState="_applicationState.MachineStates[1]" HubPath="hub-2" ImagePath="https://m3f9a8g5.rocketcdn.me/wp-content/uploads/2022/11/Falcon-cnc-router-6.webp" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MachineDashboardInformation MachineState="_applicationState.MachineStates[2]" HubPath="hub-3" ImagePath="https://ameroprecision.com/img/Category/Amero-machining-centers-priminer-v11l-alpha-center.png" />
+                    </MudItem>
+                </MudGrid>
+            </MudItem>
+        </MudGrid>
+    </Authorized>
+    <NotAuthorized>
+        <NotAuthorizedAlert IsAdminRoleOnly="true"/>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private List<MachineState> _connectedMachineStates = new List<MachineState>();
+
+    private ApexChart<MachineState>? _averageOeeChart;
+    private ApexChart<MachineState>? _averageAvailabilityChart;
+    private ApexChart<MachineState>? _averagePerformanceChart;
+    private ApexChart<MachineState>? _averageQualityChart;
+    private ApexChart<MachineState>? _totalOkNgChart;
+
+    private ApexChartOptions<MachineState> _oeeRadialBarOptions = new ApexChartOptions<MachineState>();
+    private ApexChartOptions<MachineState> _availabilityRadialBarOptions = new ApexChartOptions<MachineState>();
+    private ApexChartOptions<MachineState> _performanceRadialBarOptions = new ApexChartOptions<MachineState>();
+    private ApexChartOptions<MachineState> _qualityRadialBarOptions = new ApexChartOptions<MachineState>();
+    private ApexChartOptions<MachineState> _totalCountBarOptions = new ApexChartOptions<MachineState>();
+
+    protected override void OnInitialized()
+    {
+        _connectedMachineStates = _applicationState.GetConnectedMachineStates();
+
+        _oeeRadialBarOptions.PlotOptions = CreatePlotOptions("Average OEE");
+        _availabilityRadialBarOptions.PlotOptions = CreatePlotOptions("Average A.");
+        _performanceRadialBarOptions.PlotOptions = CreatePlotOptions("Average P.");
+        _qualityRadialBarOptions.PlotOptions = CreatePlotOptions("Average Q.");
+
+        _totalCountBarOptions = new ApexChartOptions<MachineState>
+            {
+                Chart = new Chart
+                {
+                    Stacked = true,
+                },
+                PlotOptions = new PlotOptions
+                {
+                    Bar = new PlotOptionsBar
+                    {
+                        DataLabels = new PlotOptionsBarDataLabels
+                        {
+                            Total = new BarTotalDataLabels
+                            {
+                                Style = new BarDataLabelsStyle
+                                {
+                                    FontWeight = "800"
+                                }
+                            }
+                        }
+                    }
+                },
+                Colors = new List<string> { "#5cb85c", "#d9534f" }
+            };
+    }
+
+    private PlotOptions CreatePlotOptions(string label)
+    {
+        return new PlotOptions()
+            {
+                RadialBar = new PlotOptionsRadialBar()
+                {
+                    DataLabels = new RadialBarDataLabels()
+                    {
+                        Total = new RadialBarDataLabelsTotal()
+                        {
+                            Show = true,
+                            Label = label,
+                            FontSize = "16",
+                            Formatter = @"function (w) {
+                    return (w.globals.seriesTotals.reduce((a, b) => { return a + b }, 0) / w.globals.series.length).toFixed(2) +
+                            '%'
+                  }"
+                        }
+                    }
+                }
+            };
+    }
+
+    public void Dispose()
+    {
+        
+    }
+}

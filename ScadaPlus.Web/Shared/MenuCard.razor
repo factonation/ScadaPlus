@@ -1,0 +1,31 @@
+﻿@inject NavigationManager _navigationManager
+
+<MudCard Elevation="25" Class="rounded-lg pb-4">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h5" Align="Align.Center">@HeaderText</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent Class="d-flex justify-center">
+        <MudIcon Icon="@Icon" Style="font-size: 8rem;"></MudIcon>
+    </MudCardContent>
+    <MudCardActions Class="d-flex justify-center">
+        <MudButton Variant="Variant.Filled" Color="Color.Tertiary" Size="Size.Large" Style="width:50%;" OnClick="NavigateToPath">@ButtonText</MudButton>
+    </MudCardActions>
+</MudCard>
+
+@code {
+    [Parameter]
+    public string HeaderText { get; set; } = string.Empty;
+    [Parameter]
+    public string Icon { get; set; } = string.Empty;
+    [Parameter]
+    public string Path { get; set; } = string.Empty;
+    [Parameter]
+    public string ButtonText { get; set; } = string.Empty;
+
+    private void NavigateToPath()
+    {
+        _navigationManager.NavigateTo($"/{Path}");
+    }
+}

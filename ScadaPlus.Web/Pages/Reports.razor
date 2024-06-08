@@ -1,0 +1,39 @@
+﻿@page "/reports"
+
+<PageTitle>ScadaPlus | รายงาน</PageTitle>
+
+<AuthorizeView>
+    <Authorized>
+        <MudText Typo="Typo.h3" Align="MudBlazor.Align.Center" Class="mt-8">เลือกรายงานที่ต้องการแสดง</MudText>
+        <MudGrid Class="mt-8">
+            <MudItem xs="12" md="4">
+                <ReportCard HeaderText="รายงานเครื่องจักร" Icon="@Icons.Material.Outlined.Factory" Path="report/machines" LinkText="รายงานเครื่องจักร" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <ReportCard HeaderText="รายงานประสิทธิผล" Icon="@Icons.Material.Outlined.Percent" Path="#" LinkText="รายงานประสิทธิผล" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <ReportCard HeaderText="สรุปการทำงาน" Icon="@Icons.Material.Outlined.Workspaces" Path="#" LinkText="สรุปการทำงาน" />
+            </MudItem>
+        </MudGrid>
+        <MudGrid Justify="Justify.Center">
+            <MudItem xs="12" md="4">
+                <ReportCard HeaderText="ความพร้อมใช้งานเครื่องจักร" Icon="@Icons.Material.Outlined.EventAvailable" Path="#" LinkText="ความพร้อมใช้งานเครื่องจักร" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <ReportCard HeaderText="ประสิทธิภาพเครื่องจักร" Icon="@Icons.Material.Outlined.Speed" Path="#" LinkText="ประสิทธิภาพเครื่องจักร" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <ReportCard HeaderText="สรุปของเสีย" Icon="@Icons.Material.Outlined.FmdBad" Path="#" LinkText="สรุปของเสีย" />
+            </MudItem>
+        </MudGrid>
+    </Authorized>
+    <NotAuthorized>
+        <NotAuthorizedAlert/>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+@code {
+
+}

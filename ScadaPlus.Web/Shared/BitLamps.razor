@@ -1,0 +1,20 @@
+﻿@if (Bits is not null)
+{
+    @for (int i = 0; i < Bits.Length; i++)
+    {
+        int index = i;
+        @if (Bits[index])
+        {
+            <MudAvatar Color="Color.Tertiary" Class="mx-2 my-2">@index</MudAvatar>
+        }
+        else
+        {
+            <MudAvatar Color="Color.Dark" Variant="Variant.Outlined" Class="mx-2 my-2">@index</MudAvatar>
+        }
+    }
+}
+
+@code {
+    [Parameter]
+    public bool[]? Bits { get; set; }
+}

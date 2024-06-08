@@ -1,0 +1,41 @@
+﻿@using Microsoft.AspNetCore.Identity;
+@using ScadaPlus.Data.Identity
+
+@inject SignInManager<ScadaPlusIdentityUser> _signInManager
+@inject UserManager<ScadaPlusIdentityUser> _userManager
+@inject AuthenticationStateProvider _authenticationStateProvider
+
+<MudNavMenu Color="Color.Info">
+    <MudNavLink Href="/" Match="NavLinkMatch.All">Home</MudNavLink>
+    <MudNavLink Href="/dashboard" Match="NavLinkMatch.All">Dashboard</MudNavLink>
+    <MudNavLink Href="/machines" Match="NavLinkMatch.All">Machines</MudNavLink>
+    <MudNavLink Href="/jobs" Match="NavLinkMatch.All">Jobs</MudNavLink>
+    <MudNavLink Href="/reports" Match="NavLinkMatch.All">Reports</MudNavLink>
+    <MudNavGroup Title="System" Expanded="true">
+        <MudNavLink Href="identity/account/login" Match="NavLinkMatch.All">Login</MudNavLink>
+        <MudNavLink Href="identity/account/logout">Logout</MudNavLink>
+    </MudNavGroup>
+    <MudDivider Class="my-2" />
+    @if (_user != null)
+    {
+        <MudText Typo="Typo.body2" Class="px-6">
+            <span>Logged in as: </span> @_user.Name
+        </MudText>
+    }
+</MudNavMenu>
+
+@code {
+    private ScadaPlusIdentityUser? _user;
+
+    protected override async Task OnInitializedAsync()
+    {
+        AuthenticationState authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
+
+        ScadaPlusIdentityUser? user = await _userManager.GetUserAsync(authState.User);
+
+        if (user != null && _signInManager.IsSignedIn(authState.User))
+        {
+            _user = user;
+        }
+    }
+}

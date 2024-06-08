@@ -1,0 +1,32 @@
+﻿@page
+@model LoginModel
+
+@{
+    ViewData["Title"] = "Log in";
+}
+
+<div class="row my-2">
+    <div class="col">
+        <h1>Login</h1>
+    </div>
+    <div class="row my-2">
+        <div class="col">
+            <section>
+                <form method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="form-floating my-2">
+                        <input asp-for="Input.Username" class="form-control" name="Input.Username" />
+                        <label asp-for="Input.Username">Username</label>
+                        <span asp-validation-for="Input.Username" class="text-danger"></span>
+                    </div>
+                    <div class="form-floating my-2">
+                        <input type="password" asp-for="Input.Password" class="form-control" name="Input.Password" />
+                        <label asp-for="Input.Password" class="form-label">Password</label>
+                        <span asp-validation-for="Input.Password" class="text-danger"></span>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100 my-2">Login</button>
+                </form>
+            </section>
+        </div>
+    </div>
+</div>

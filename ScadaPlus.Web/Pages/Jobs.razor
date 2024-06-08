@@ -1,0 +1,101 @@
+﻿@page "/jobs"
+
+@inject IDialogService _dialogService
+@inject ApplicationState _applicationState
+@inject JobRepository _jobRepository
+
+<AuthorizeView Roles="Admin, Operator">
+    <Authorized>
+        <MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
+            <MudGrid>
+                <MudItem xs="6">
+                    <MudText Typo="Typo.h4">
+                        งานผลิตทั้งหมด
+                    </MudText>
+                </MudItem>
+                <MudItem xs="6" Class="d-flex justify-end">
+                    <MudFab Color="Color.Tertiary" StartIcon="@Icons.Material.Filled.Add" OnClick="OpenCreateJobDialog" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudDataGrid Items="_jobs" Hover="true" Bordered="true">
+                        <Columns>
+                            <PropertyColumn Property="j => j.JobId" Title="รหัสงาน" />
+                            <PropertyColumn Property="j => j.Machine != null ? j.Machine.Code : null" Title="เครื่องจักร" />
+                            <PropertyColumn Property="j => j.Name" Title="ชื่องาน" />
+                            <PropertyColumn Property="j => j.StartTime.ToString()" Title="เวลาเริ่ม" />
+                            <PropertyColumn Property="j => j.EndTime.ToString()" Title="เวลาจบ" />
+                            <PropertyColumn Property="j => _jobStatusFunc(j)" CellStyleFunc="_cellStyleFunc" Title="สถานะ" />
+                        </Columns>
+                    </MudDataGrid>
+                </MudItem>
+            </MudGrid>
+        </MudContainer>
+    </Authorized>
+    <NotAuthorized>
+        <NotAuthorizedAlert/>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+
+@code {
+    private List<Job> _jobs = new List<Job>();
+
+    protected override void OnInitialized()
+    {
+        _jobs = _applicationState.Jobs;
+    }
+
+    private Func<Job, string> _jobStatusFunc =>
+        j =>
+        {
+            if (DateTime.Now < j.StartTime)
+            {
+                return "งานยังไม่เริ่ม";
+            }
+            else if (DateTime.Now > j.EndTime)
+            {
+                return "งานจบแล้ว";
+            }
+            else
+            {
+                return "อยู่ในเวลางาน";
+            }
+        };
+
+    private Func<Job, string> _cellStyleFunc =>
+        j =>
+        {
+            string status = _jobStatusFunc(j);
+
+            string style = string.Empty;
+
+            if (status == "อยู่ในเวลางาน")
+                style += "background-color: #8CED8C";
+            else if (status == "งานจบแล้ว")
+                style += "background-color: #BDC3C7";
+
+            return style;
+        };
+
+    private void OpenCreateJobDialog()
+    {
+        DialogParameters dialogParameters = new DialogParameters
+            {
+                ["OnCreated"] = EventCallback.Factory.Create(this, HandleCreated)
+            };
+
+        _dialogService.Show<CreateJobDialog>(string.Empty, dialogParameters, new DialogOptions
+            {
+                CloseButton = true,
+                DisableBackdropClick = true
+            });
+    }
+
+    private async Task HandleCreated()
+    {
+        _jobs = await _jobRepository.ReadJobsAsync();
+        await _applicationState.RefreshJobsAsync();
+        StateHasChanged();
+    }
+}

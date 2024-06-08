@@ -1,0 +1,100 @@
+﻿@inject NavigationManager _navigationManager
+
+@implements IDisposable
+
+<MudPaper Class="pa-4" Elevation="2">
+    <MudStack Row="true">
+        @if (MachineState is not null)
+        {
+            @if (MachineState.IsRunning)
+            {
+                <MudBadge Dot="true" Color="MudBlazor.Color.Tertiary">
+                    <MudImage Src="@ImagePath" Width="100" Height="100" ObjectFit="ObjectFit.Contain" />
+                </MudBadge>
+            }
+            else if (MachineState.IsConnected)
+            {
+                <MudBadge Dot="true" Color="MudBlazor.Color.Error">
+                    <MudImage Src="@ImagePath" Width="100" Height="100" ObjectFit="ObjectFit.Contain" />
+                </MudBadge>
+            }
+            else
+            {
+                <MudImage Src="@ImagePath" Width="100" Height="100" ObjectFit="ObjectFit.Contain" />
+            }
+            <MudStack Style="width: 200px;">
+                <MudText Typo="Typo.subtitle1">เครื่อง: @MachineState.MachineCode</MudText>
+                <MudText Typo="Typo.subtitle2">งาน: @MachineState.ActiveJobId</MudText>
+                <MudText Typo="Typo.caption">ข้อมูลล่าสุด: @MachineState.CurrentTime</MudText>
+            </MudStack>
+            <MudStack Style="width: 100%;">
+                <MudContainer class="d-flex justify-space-between gap-4">
+                    <MudText Typo="Typo.caption">เวลาเริ่ม @MachineState.StartTime</MudText>
+                    <MudText Typo="Typo.caption">เวลาจบ @MachineState.EndTime</MudText>
+                </MudContainer>
+                <MudProgressLinear Color="MudBlazor.Color.Tertiary" Size="MudBlazor.Size.Large" Min="0" Max="1" Value="CalculateProgress(MachineState.StartTime, MachineState.CurrentTime, MachineState.EndTime)" />
+                <MudChipSet>
+                    <MudChip Color="MudBlazor.Color.Info">
+                        A: @MachineState?.Availability.ToString("0.##")
+                    </MudChip>
+                    <MudChip Color="MudBlazor.Color.Info">
+                        P: @MachineState?.Performance.ToString("0.##")
+                    </MudChip>
+                    <MudChip Color="MudBlazor.Color.Info">
+                        Q: @MachineState?.Quality.ToString("0.##")
+                    </MudChip>
+                </MudChipSet>
+            </MudStack>
+        }
+    </MudStack>
+</MudPaper>
+
+@code {
+    [Parameter]
+    public MachineState? MachineState { get; set; }
+    [Parameter]
+    public string HubPath { get; set; } = string.Empty;
+    [Parameter]
+    public string ImagePath { get; set; } = string.Empty;
+    private HubConnection? _hubConnection;
+
+    private ModbusDeviceData? _data;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl(_navigationManager.ToAbsoluteUri($"/{HubPath}"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        _hubConnection.On<ModbusDeviceData>("ReceiveModbusDeviceData", async (data) =>
+        {
+            _data = data;
+            MachineState?.UpdateStateFromModbusDeviceData(data);
+            await InvokeAsync(StateHasChanged);
+        });
+
+        await _hubConnection.StartAsync();
+    }
+
+    private double CalculateProgress(DateTime startTime, DateTime currentTime, DateTime endTime)
+    {
+        // Ensure that the current time is within the start and end times
+        if (currentTime < startTime) return 0; // Not started
+        if (currentTime > endTime) return 1; // Completed
+
+        // Total duration from start to end
+        var totalDuration = (endTime - startTime).TotalSeconds;
+        // Time elapsed from start to current time
+        var elapsed = (currentTime - startTime).TotalSeconds;
+
+        // Normalize current progress to a 0-1 scale
+        var progress = elapsed / totalDuration;
+
+        return progress;
+    }
+
+    public void Dispose()
+    {
+    }
+}
